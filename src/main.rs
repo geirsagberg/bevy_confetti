@@ -1,3 +1,6 @@
+use bevy::prelude::*;
+use bevy_confetti::MainPlugin;
+
 fn main() {
-    println!("Hello, world!");
+    App::new().add_plugins((DefaultPlugins, MainPlugin)).run();
 }
