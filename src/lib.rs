@@ -1,5 +1,13 @@
+#![allow(unused_parens)]
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 use rand::random;
+
+#[derive(Reflect, Resource, Default)]
+#[reflect(Resource)]
+pub struct DebugInfo {
+    entity_count: usize,
+}
 
 pub struct MainPlugin;
 
@@ -9,7 +17,7 @@ impl Plugin for MainPlugin {
             .insert_resource(Mouse::default())
             .add_systems(Startup, setup_camera)
             .add_systems(Update, (calculate_mouse_position))
-            .add_systems(FixedUpdate, (handle_click));
+            .add_systems(FixedUpdate, (spread_joy, cleanup));
     }
 }
 
@@ -38,25 +46,55 @@ fn calculate_mouse_position(
     mouse.position = position;
 }
 
-fn handle_click(
+fn spread_joy(
     mut commands: Commands,
     mouse_button_input: Res<Input<MouseButton>>,
     mouse: Res<Mouse>,
+    mut debug_info: ResMut<DebugInfo>,
 ) {
     if mouse_button_input.pressed(MouseButton::Left) {
         let random_color = Color::rgb(random(), random(), random());
-        commands.spawn(SpriteBundle {
-            transform: Transform::from_translation(Vec3::new(
-                mouse.position.x,
-                mouse.position.y,
-                0.0,
-            )),
-            sprite: Sprite {
-                color: random_color,
-                custom_size: Some(Vec2::new(2.0, 2.0)),
-                ..default()
-            },
-            ..default()
-        });
+        for _ in 0..100 {
+            debug_info.entity_count += 1;
+            let direction = random::<f32>() * 2.0 * std::f32::consts::PI;
+
+            let offset_vec_3 = Vec3::new(direction.cos(), direction.sin(), 0.0);
+
+            let transform = Transform::from_translation(
+                Vec3::new(mouse.position.x, mouse.position.y, 0.0) + offset_vec_3 * 10.0,
+            );
+
+            commands
+                .spawn(SpriteBundle {
+                    transform,
+                    sprite: Sprite {
+                        color: random_color,
+                        custom_size: Some(Vec2::new(2.0, 2.0)),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .insert(RigidBody::Dynamic)
+                .insert(Collider::cuboid(1.0, 1.0))
+                .insert(Velocity::linear(Vec2::new(
+                    random::<f32>() * 100.0 - 50.0,
+                    random::<f32>() * 100.0 - 50.0,
+                )));
+        }
+    }
+}
+
+fn cleanup(
+    mut commands: Commands,
+    mut debug_info: ResMut<DebugInfo>,
+    query: Query<(&Transform, Entity)>,
+    window: Query<&Window>,
+) {
+    let height = window.single().resolution.height();
+    for (transform, entity) in &query {
+        if transform.translation.y < -height / 2.0 {
+            debug_info.entity_count -= 1;
+            commands.entity(entity).despawn();
+        }
     }
 }
