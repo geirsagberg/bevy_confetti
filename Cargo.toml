@@ -5,7 +5,7 @@ edition = "2021"
 
 [profile.dev.package."*"]
 debug = false
-opt-level = 3
+opt-level = 1
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
