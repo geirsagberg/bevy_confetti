@@ -15,7 +15,8 @@ impl Plugin for MainPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ClearColor(Color::BLACK))
             .insert_resource(Mouse::default())
-            .add_systems(Startup, setup_camera)
+            // .insert_resource(Time::<Fixed>::from_seconds(0.1))
+            .add_systems(Startup, (setup_camera, spawn_ground))
             .add_systems(Update, (calculate_mouse_position))
             .add_systems(FixedUpdate, (spread_joy, cleanup));
     }
@@ -28,6 +29,15 @@ struct Mouse {
 
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
+}
+
+#[derive(Component)]
+struct Ground {
+    bitmap:
+}
+
+fn spawn_ground(mut commands: Commands) {
+    commands.spawn()
 }
 
 fn calculate_mouse_position(
@@ -75,11 +85,11 @@ fn spread_joy(
                     ..default()
                 })
                 .insert(RigidBody::Dynamic)
+                // .insert(CollisionGroups::new(Group::NONE, Group::NONE))
                 .insert(Collider::cuboid(1.0, 1.0))
-                .insert(Velocity::linear(Vec2::new(
-                    random::<f32>() * 100.0 - 50.0,
-                    random::<f32>() * 100.0 - 50.0,
-                )));
+                .insert(Velocity::linear(
+                    offset_vec_3.truncate() * 500.0 * (random::<f32>() + 0.5),
+                ));
         }
     }
 }

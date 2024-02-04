@@ -10,7 +10,7 @@ fn main() {
         .register_type::<DebugInfo>()
         .add_plugins((
             ResourceInspectorPlugin::<DebugInfo>::default(),
-            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
+            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0).in_fixed_schedule(),
             MainPlugin,
         ))
         .run();
