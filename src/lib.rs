@@ -143,49 +143,37 @@ fn paint_ground(
 ) {
     let (mut ground, image_handle) = ground_query.single_mut();
 
-    let width = ground.width as isize;
-    let height = ground.height as isize;
+    let width = ground.width;
+    let height = ground.height;
 
     let image = images.get_mut(image_handle).unwrap();
 
     for (transform, velocity, sprite, entity) in &balls_query {
-        let x = (transform.translation.x + width as f32 / 2.0) as isize;
-        let y = (transform.translation.y + height as f32 / 2.0) as isize;
-        if x < width as isize && y < height as isize && x >= 0 && y >= 0 {
-            let index = y * width + x;
+        let x = transform.translation.x + width as f32 / 2.0;
+        let y = transform.translation.y + height as f32 / 2.0;
+        if let Some(index) = within_bounds(x, y, width, height) {
+            if ground.bitmap[index].is_some() {
+                let mut y = y;
+                let mut x = x;
 
-            if ground.bitmap[index as usize].is_some() {
-                let mut y = y as isize;
-                let mut x = x as isize;
+                let normalized_velocity = velocity.linvel.normalize_or_zero();
 
-                // Based on the angle of the velocity, get the first position before the collision (1 of 8 directions)
-                let angle = velocity.linvel.angle_between(Vec2::new(1.0, 0.0));
+                if normalized_velocity == Vec2::ZERO {
+                    continue;
+                }
 
-                println!("Collision angle: {}", angle.to_degrees());
+                let dx = normalized_velocity.x;
+                let dy = normalized_velocity.y;
 
-                let dx = match angle {
-                    angle if angle <= QUARTER_PI || angle >= 7.0 * QUARTER_PI => -1,
-                    angle if angle >= 3.0 * QUARTER_PI && angle <= 5.0 * QUARTER_PI => 1,
-                    _ => 0,
-                };
-                let dy = match angle {
-                    angle if angle >= QUARTER_PI && angle <= 3.0 * QUARTER_PI => -1,
-                    angle if angle >= 5.0 * QUARTER_PI && angle <= 7.0 * QUARTER_PI => 1,
-                    _ => 0,
-                };
+                let mut maybe_index = within_bounds(x, y, width, height);
 
-                while y < height
-                    && x < width
-                    && y >= 0
-                    && x >= 0
-                    && ground.bitmap[(y * width + x) as usize].is_some()
-                {
+                while maybe_index.is_some() && ground.bitmap[maybe_index.unwrap()].is_some() {
                     y -= dy;
                     x -= dx;
+                    maybe_index = within_bounds(x, y, width, height);
                 }
-                if y < height && x < width && y >= 0 && x >= 0 {
+                if let Some(index) = maybe_index {
                     let quantized_color = sprite.color.into();
-                    let index = (y * width + x) as usize;
                     ground.bitmap[index] = Some(quantized_color);
                     image.data[4 * index + 0] = quantized_color.r;
                     image.data[4 * index + 1] = quantized_color.g;
@@ -196,6 +184,18 @@ fn paint_ground(
             }
         }
     }
+}
+
+fn within_bounds(x: f32, y: f32, width: usize, height: usize) -> Option<usize> {
+    if (x as usize) < width && (y as usize) < height && x >= 0.0 && y >= 0.0 {
+        Some(get_index(x, y, width))
+    } else {
+        None
+    }
+}
+
+fn get_index(x: f32, y: f32, width: usize) -> usize {
+    return (y as usize) * width + (x as usize);
 }
 
 fn render_ground(
