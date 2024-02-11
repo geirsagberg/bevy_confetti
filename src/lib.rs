@@ -198,23 +198,6 @@ fn get_index(x: f32, y: f32, width: usize) -> usize {
     return (y as usize) * width + (x as usize);
 }
 
-fn render_ground(
-    mut commands: Commands,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut query: Query<(&Ground, &mut Handle<ColorMaterial>)>,
-) {
-    // for (ground, mut material_handle) in query.iter_mut() {
-    //     let texture = Image::new_fill(
-    //         Extent3d::new(800, 600, 1),
-    //         TextureDimension::D2,
-    //         &ground.bitmap_to_bytes(),
-    //         TextureFormat::Rgba8UnormSrgb,
-    //     );
-
-    //     *material_handle = materials.add(texture.into());
-    // }
-}
-
 fn calculate_mouse_position(
     camera_query: Query<(&GlobalTransform, &Camera)>,
     window_query: Query<&Window>,
