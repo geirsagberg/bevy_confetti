@@ -1,10 +1,10 @@
 #![allow(unused_parens)]
-use std::f32::consts::PI;
 
 use bevy::{
     ecs::query,
     prelude::*,
     render::{
+        render_asset::RenderAssetUsages,
         render_resource::{Extent3d, TextureDimension, TextureFormat},
         texture::BevyDefault,
         Render,
@@ -115,6 +115,7 @@ fn spawn_ground(mut commands: Commands, mut images: ResMut<Assets<Image>>, windo
         TextureDimension::D2,
         &ground.bitmap_to_bytes(),
         TextureFormat::bevy_default(),
+        RenderAssetUsages::RENDER_WORLD | RenderAssetUsages::MAIN_WORLD,
     );
 
     let ground_image_handle = images.add(ground_image);
@@ -131,8 +132,6 @@ fn spawn_ground(mut commands: Commands, mut images: ResMut<Assets<Image>>, windo
         })
         .insert((ground));
 }
-
-const QUARTER_PI: f32 = std::f32::consts::PI / 4.0;
 
 fn paint_ground(
     mut ground_query: Query<(&mut Ground, &Handle<Image>)>,
@@ -220,7 +219,7 @@ const CONFETTI_SIZE: f32 = 1.0;
 
 fn spread_joy(
     mut commands: Commands,
-    mouse_button_input: Res<Input<MouseButton>>,
+    mouse_button_input: Res<ButtonInput<MouseButton>>,
     mouse: Res<Mouse>,
     mut debug_info: ResMut<DebugInfo>,
 ) {
