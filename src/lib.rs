@@ -1,13 +1,9 @@
-#![allow(unused_parens)]
-
 use bevy::{
-    ecs::query,
     prelude::*,
     render::{
         render_asset::RenderAssetUsages,
         render_resource::{Extent3d, TextureDimension, TextureFormat},
         texture::BevyDefault,
-        Render,
     },
 };
 use bevy_rapier2d::prelude::*;
